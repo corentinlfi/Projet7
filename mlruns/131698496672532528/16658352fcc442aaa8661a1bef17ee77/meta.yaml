@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/coren/Documents/M1-datascience/Projet-7/Mon-projet-7/mlruns/131698496672532528/16658352fcc442aaa8661a1bef17ee77/artifacts
+end_time: 1720791724459
+entry_point_name: ''
+experiment_id: '131698496672532528'
+lifecycle_stage: active
+run_id: 16658352fcc442aaa8661a1bef17ee77
+run_name: marvelous-bat-160
+run_uuid: 16658352fcc442aaa8661a1bef17ee77
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720791717175
+status: 3
+tags: []
+user_id: coren

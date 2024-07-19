@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/coren/Documents/M1-datascience/Projet-7/Mon-projet-7/mlruns/131698496672532528/7c12248fb4564367aad14e024b7ec1ab/artifacts
+end_time: 1720791250068
+entry_point_name: ''
+experiment_id: '131698496672532528'
+lifecycle_stage: active
+run_id: 7c12248fb4564367aad14e024b7ec1ab
+run_name: rumbling-squid-213
+run_uuid: 7c12248fb4564367aad14e024b7ec1ab
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720791249978
+status: 4
+tags: []
+user_id: coren
