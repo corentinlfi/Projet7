@@ -1,0 +1,41 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - master  # Déclenche le déploiement sur la branche principale
+
+env:
+  EC2_HOST: ec2-51-44-16-165.eu-west-3.compute.amazonaws.com  # Remplacez par l'adresse de votre instance EC2
+  EC2_USER: ec2-user  # Utilisateur SSH pour se connecter à l'instance EC2
+  REPO_PATH: /home/ec2-user/Projet7 # Remplacez par le chemin réel sur votre EC2
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_HOST }} << 'EOF'
+            # Aller dans le répertoire du projet
+            cd $REPO_PATH
+
+            # Mettre à jour le dépôt
+            git pull origin master
+
+            # Redémarrer le serveur Uvicorn
+            pkill -f uvicorn
+            nohup uvicorn main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+
+            echo "Déploiement terminé avec succès."
+          EOF
