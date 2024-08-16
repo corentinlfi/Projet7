@@ -6,7 +6,7 @@ on:
       - master  # Déclenche le déploiement sur la branche principale
 
 env:
-  EC2_HOST: ec2-51-44-16-165.eu-west-3.compute.amazonaws.com  # Remplacez par l'adresse de votre instance EC2
+  EC2_HOST: ec2-13-37-239-183.eu-west-3.compute.amazonaws.com  # Remplacez par l'adresse de votre instance EC2
   EC2_USER: ec2-user  # Utilisateur SSH pour se connecter à l'instance EC2
   REPO_PATH: /home/ec2-user/Projet7 # Remplacez par le chemin réel sur votre EC2
 
