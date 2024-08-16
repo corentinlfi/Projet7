@@ -8,14 +8,21 @@ app = FastAPI()
 model = cb.CatBoostClassifier()
 model.load_model('meilleur_modele_catboost.cbm')
 
-# Exemple de fonction pour obtenir les données client à partir de l'ID
+# Charger les données une seule fois pour éviter les frais de chargement récurrents
+data = pd.read_csv("../data/application_train_preprocessed.csv")
+
 def get_client_data(client_id: int) -> pd.DataFrame:
-    # Remplacez cette partie par le chargement de vos données
-    # Par exemple, à partir d'une base de données ou d'un fichier CSV
-    # Exemple :
-    df = pd.read_csv("../data/application_train_preprocessed.csv")
-    client_data = df[df['SK_ID_CURR'] == client_id]
+    # Filtrer les données pour obtenir les informations du client spécifique
+    client_data = data[data['client_id'] == client_id]
     
+    if client_data.empty:
+        return None
+    
+    # Assurez-vous que les données sont prétraitées correctement
+    # Exemples de prétraitement : normalisation, gestion des valeurs manquantes, etc.
+    # Ajustez cette partie en fonction de votre modèle
+    client_data = client_data.drop(columns=['client_id'])  # Exclure la colonne ID pour la prédiction
+
     return client_data
 
 @app.get("/")
@@ -25,17 +32,17 @@ def read_root():
 @app.get("/predict/{client_id}")
 def predict(client_id: int):
     try:
-        # Récupérer les données du client
         client_data = get_client_data(client_id)
+        if client_data is None:
+            raise HTTPException(status_code=404, detail="Client not found")
         
         if client_data.empty:
             raise HTTPException(status_code=404, detail="Client not found")
-
-        # Prédire la solvabilité
-        prediction = model.predict(client_data)
         
-        # Retourner le résultat
+        # Prévoir en utilisant le modèle
+        prediction = model.predict(client_data)
         solvable = bool(prediction[0])
+        
         return {"client_id": client_id, "solvable": solvable}
     
     except Exception as e:
