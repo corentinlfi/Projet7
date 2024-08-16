@@ -10,7 +10,7 @@ model.load_model('meilleur_modele_catboost.cbm')
 data = pd.read_csv("../data/application_train_preprocessed.csv")
 
 def get_client_data(client_id: int) -> pd.DataFrame:
-    client_data = data.loc[data['client_id'] == client_id]
+    client_data = data.loc[data['SK_ID_CURR'] == client_id]
     return client_data
 
 @app.get("/")
