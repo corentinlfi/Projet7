@@ -10,7 +10,9 @@ model.load_model('meilleur_modele_catboost.cbm')
 data = pd.read_csv("../data/application_train_preprocessed.csv")
 
 def get_client_data(client_id: int) -> pd.DataFrame:
-    client_data = data.loc[data['SK_ID_CURR'] == client_id]
+    if 'SK_ID_CURR' not in data.columns:
+        raise HTTPException(status_code=500, detail="Column 'SK_ID_CURR' not found in data")
+    client_data = data[data['SK_ID_CURR'] == client_id]
     return client_data
 
 @app.get("/")
@@ -27,7 +29,6 @@ def predict(client_id: int):
         if client_data.empty:
             raise HTTPException(status_code=404, detail="Client not found")
         
-        # Prévoir en utilisant le modèle
         prediction = model.predict(client_data)
         solvable = bool(prediction[0])
         
