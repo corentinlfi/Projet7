@@ -8,6 +8,8 @@ app = FastAPI()
 model = cb.CatBoostClassifier()
 model.load_model('meilleur_modele_catboost.cbm')
 data = pd.read_csv("application_train_preprocessed.csv")
+if 'Unnamed: 0' in data.columns:
+    data = data.drop(columns=['Unnamed: 0'])
 
 def get_client_data(client_id: int) -> pd.DataFrame:
     if 'SK_ID_CURR' not in data.columns:
