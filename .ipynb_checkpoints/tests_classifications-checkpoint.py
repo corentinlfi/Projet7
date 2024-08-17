@@ -5,20 +5,20 @@ import mlflow
 
 # Test de l'importation des données
 def test_data_import():
-    df = pd.read_csv("../data/application_train_preprocessed.csv")
-    assert not df.empty, "DataFrame is empty!"
-    assert 'TARGET' in df.columns, "'TARGET' column is missing!"
+    df = pd.read_csv("application_train_preprocessed.csv")
+    assert not df.empty, "Le dataframe est vide."
+    assert 'TARGET' in df.columns, "La colonne TARGET est manquante."
 
 # Test de la division des données
 def test_train_test_split():
-    df = pd.read_csv("../data/application_train_preprocessed.csv")
+    df = pd.read_csv("application_train_preprocessed.csv")
     X = df.drop('TARGET', axis=1)
     y = df['TARGET']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    assert X_train.shape[0] == y_train.shape[0], "Mismatch in training set sizes!"
-    assert X_test.shape[0] == y_test.shape[0], "Mismatch in test set sizes!"
-    assert X_train.shape[0] > 0 and X_test.shape[0] > 0, "Train/Test split failed!"
+    assert X_train.shape[0] == y_train.shape[0], "Problème dans la taille du jeu d entraînement"
+    assert X_test.shape[0] == y_test.shape[0], "Problème dans la taille du jeu de test"
+    assert X_train.shape[0] > 0 and X_test.shape[0] > 0, "Le split train/test a échoué"
 
 # Test de la configuration MLFlow
 def test_mlflow_experiment_setup():
