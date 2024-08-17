@@ -33,8 +33,25 @@ def predict(client_id: int):
         
         prediction = model.predict(client_data)
         solvable = bool(prediction[0])
+
+        """TEST AFFICHAGE DATAFRAME FEATURES CLIENT"""
         
-        return {"client_id": client_id, "solvable": solvable}
+        client_features = client_data.to_dict(orient="records")[0]
+
+        client_features_df = {
+            "feature": list(client_features.keys()),
+            "value": list(client_features.values())
+        }
+        
+        return {
+            "client_id": client_id,
+            "solvable": solvable,
+            "client_features": client_features_df
+        }
+
+        """FIN DU TEST"""
+    
+        #return {"client_id": client_id, "solvable": solvable}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
