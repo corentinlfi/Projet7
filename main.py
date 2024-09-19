@@ -34,6 +34,9 @@ def predict(client_id: int):
         prediction = model.predict(client_data)
         solvable = bool(prediction[0])
 
+        proba = model.predict_proba(client_data)
+        probability = float(proba[0][1])
+
         """TEST AFFICHAGE DATAFRAME FEATURES CLIENT"""
         
         client_features = client_data.to_dict(orient="records")[0]
@@ -46,6 +49,7 @@ def predict(client_id: int):
         return {
             "client_id": client_id,
             "solvable": solvable,
+	    "probability": probability,
             "client_features": client_features_df
         }
 
