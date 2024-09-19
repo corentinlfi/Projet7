@@ -55,7 +55,7 @@ def predict(client_id: int):
 
         """FIN DU TEST"""
     
-        #return {"client_id": client_id, "solvable": solvable}
+        #return {"client_id": client_id, "solvable": solvable, "probability": probability}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
