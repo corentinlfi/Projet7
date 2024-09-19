@@ -49,7 +49,7 @@ def predict(client_id: int):
         return {
             "client_id": client_id,
             "solvable": solvable,
-	    "probability": probability,
+            "probability": probability,
             "client_features": client_features_df
         }
 
