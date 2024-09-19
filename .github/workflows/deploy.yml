@@ -7,6 +7,7 @@ on:
 
 env:
   EC2_HOST: ec2-35-181-57-191.eu-west-3.compute.amazonaws.com  # Remplacez par l'adresse de votre instance EC2
+
   EC2_USER: ec2-user  # Utilisateur SSH pour se connecter à l'instance EC2
   REPO_PATH: /home/ec2-user/Projet7 # Remplacez par le chemin réel sur votre EC2
 
