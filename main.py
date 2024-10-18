@@ -5,15 +5,19 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
-# Charger le modèle
+# Charger le modèle et le seuil de classification intégrant la fonction coût métier
 model = cb.CatBoostClassifier()
 model.load_model('meilleur_modele_catboost.cbm')
+seuil_optimal = np.load('seuil_optimal.npy')
+seuil_optimal = float(seuil_optimal)
+seuil_optimal = round(seuil_optimal,2)
 
 # Charger les données
 data = pd.read_csv("application_train_preprocessed.csv")
 data = data.fillna(0)
 data_brut = pd.read_csv("application_train.csv")
 data_brut = data_brut.fillna(0)
+description_features = pd.read_csv("description_features.csv")
 
 # Titre de l'application
 st.title("Prédiction de solvabilité des clients")
@@ -25,6 +29,7 @@ data_brut.loc[data_brut["FLAG_OWN_REALTY"] == "N", "FLAG_OWN_REALTY"] = "No"
 data_brut.loc[data_brut["FLAG_OWN_REALTY"] == "Y", "FLAG_OWN_REALTY"] = "Yes"
 data_brut.loc[data_brut["FLAG_OWN_CAR"] == "N", "FLAG_OWN_CAR"] = "No"
 data_brut.loc[data_brut["FLAG_OWN_CAR"] == "Y", "FLAG_OWN_CAR"] = "Yes"
+description_features = description_features.sort_values(by='Row', ascending=True)
 
 
 # Demander à l'utilisateur d'entrer l'ID du client
@@ -46,19 +51,19 @@ if st.button("Prédire"):
         if client_data.empty:
             st.error("Client non trouvé.")
         else:
-            
-            prediction = model.predict(client_data)
-            solvable = bool(prediction[0])
 
             proba = model.predict_proba(client_data)
             probability = float(proba[0][1])
+            solvable = probability >= seuil_optimal
+
+            if solvable:
+                st.write(f"Le client est solvable avec un score de {probability:.2f} sur un seuil minimal de {seuil_optimal}")
+            else:
+                st.write(f"Le client est considéré comme insolvable avec un score de {probability:.2f} sur un seuil minimal de {seuil_optimal}")            
             
             # Afficher les informations sur le crédit demandé
             aff_info("AMT_CREDIT", "Montant du crédit demandé :", unité="$")
             aff_info("AMT_ANNUITY", "Montant de l'annuité :", unité="$")
-            
-            # Afficher les résultats
-            #st.success(f"Client ID: {client_id}, Solvable: {solvable}, Score: {probability:.2f}")
 
             # Afficher la jauge pour le score
             gauge_fig = go.Figure(go.Indicator(
@@ -69,19 +74,21 @@ if st.button("Prédire"):
                     "axis": {"range": [0, 1], "tickcolor": "#FFFFFF"},
                     "bar": {"color": "#1E90FF"},
                     "steps": [
-                        {"range": [0, 0.5], "color": "#FF4500"},
-                        {"range": [0.5, 1], "color": "#32CD32"}
+                        {"range": [0, seuil_optimal], "color": "#FF4500"},
+                        {"range": [seuil_optimal, 1], "color": "#32CD32"}
                     ],
                     "threshold": {
                         "line": {"color": "#FFD700", "width": 4},
                         "thickness": 0.75,
-                        "value": 0.5
+                        "value": seuil_optimal
                     }
                 }
             ))
 
             st.plotly_chart(gauge_fig)
 
+            #Feature importance globale
+            
             # Feature importance locale
             client_pool = cb.Pool(client_data)
             shap_values = model.get_feature_importance(client_pool, type="ShapValues")            
@@ -165,6 +172,11 @@ if st.button("Prédire"):
     except Exception as e:
         st.error(f"Erreur : {str(e)}")
 
-# Afficher les colonnes disponibles
-st.write("Liste des données clients")
-st.write(data_brut.columns.tolist())
+# Afficher les données clients disponibles
+if st.checkbox("Afficher/Masquer la liste des données clients"):
+    st.write("Cliquez sur chaque donnée pour voir la description.")
+    
+    # Boucle pour afficher chaque row dans un expander individuel
+    for index, row in description_features.iterrows():
+        with st.expander(row['Row']):
+            st.write(row['Description'])
