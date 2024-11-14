@@ -31,17 +31,79 @@ data_brut.loc[data_brut["FLAG_OWN_CAR"] == "N", "FLAG_OWN_CAR"] = "No"
 data_brut.loc[data_brut["FLAG_OWN_CAR"] == "Y", "FLAG_OWN_CAR"] = "Yes"
 description_features = description_features.sort_values(by='Row', ascending=True)
 
+# Ajouter une option pour choisir la taille du texte
+text_size = st.selectbox("Sélectionnez la taille du texte", options=["Petit", "Moyen", "Grand"])
 
-# Demander à l'utilisateur d'entrer l'ID du client
-client_id = st.text_input("Entrez l'ID du client recherché :")
+# Appliquer du CSS pour ajuster la taille du texte en fonction du choix avec des pourcentages
+if text_size == "Petit":
+    font_size = 16
+    st.markdown(
+        """<style>
+        html, body {
+            font-size: 100% !important;
+        }
+        h1 {
+            font-size: 2em !important;  /* 200% de la taille normale */
+        }
+        h2 {
+            font-size: 1.75em !important; /* 175% de la taille normale */
+        }
+        h3 {
+            font-size: 1.5em !important; /* 150% de la taille normale */
+        }
+        </style>""", unsafe_allow_html=True)
+elif text_size == "Moyen":
+    font_size = 20
+    st.markdown(
+        """<style>
+        html, body {
+            font-size: 125% !important;
+        }
+        h1 {
+            font-size: 2em !important;
+        }
+        h2 {
+            font-size: 1.75em !important;
+        }
+        h3 {
+            font-size: 1.5em !important;
+        }
+        </style>""", unsafe_allow_html=True)
+else:  # Grand
+    font_size = 24
+    st.markdown(
+        """<style>
+        html, body {
+            font-size: 150% !important;
+        }
+        h1 {
+            font-size: 2em !important;
+        }
+        h2 {
+            font-size: 1.75em !important;
+        }
+        h3 {
+            font-size: 1.5em !important;
+        }
+        </style>""", unsafe_allow_html=True)
+
+
 
 # Fonction d'affichage textuel d'informations clients
 def aff_info(feature, phrase, unité=None):
     feature_client = client_data_brut[feature].values[0] if feature in client_data_brut.columns else "Non spécifié"
     if unité:
-        st.write(phrase, f"{feature_client}", unité)
+        st.markdown(f"{phrase} <span style='color:#F2E205; font-weight:bold;'>{feature_client}</span> {unité}", unsafe_allow_html=True)
     else:
-        st.write(phrase, f"{feature_client}")
+        st.markdown(f"{phrase} <span style='color:#F2E205; font-weight:bold;'>{feature_client}</span>", unsafe_allow_html=True)
+
+
+
+
+# Demander à l'utilisateur d'entrer l'ID du client
+client_id = st.text_input("Entrez l'ID du client recherché :")
+
+
 
 if st.button("Prédire"):
     try:
@@ -57,10 +119,20 @@ if st.button("Prédire"):
             solvable = probability >= seuil_optimal
 
             if solvable:
-                st.write(f"Le client est solvable avec un score de {probability:.2f} sur un seuil minimal de {seuil_optimal}")
+                st.markdown(f"""
+                    Le client est solvable avec un score de 
+                    <span style='color:#F2E205; font-weight:bold;'>{probability:.2f}</span> 
+                    sur un seuil minimal de 
+                    <span style='color:#F2E205; font-weight:bold;'>{seuil_optimal}</span>
+                    """, unsafe_allow_html=True)
             else:
-                st.write(f"Le client est considéré comme insolvable avec un score de {probability:.2f} sur un seuil minimal de {seuil_optimal}")            
-            
+                st.markdown(f"""
+                    Le client est considéré comme insolvable avec un score de 
+                    <span style='color:#F2E205; font-weight:bold;'>{probability:.2f}</span> 
+                    sur un seuil minimal de 
+                    <span style='color:#F2E205; font-weight:bold;'>{seuil_optimal}</span>
+                    """, unsafe_allow_html=True)
+          
             # Afficher les informations sur le crédit demandé
             aff_info("AMT_CREDIT", "Montant du crédit demandé :", unité="$")
             aff_info("AMT_ANNUITY", "Montant de l'annuité :", unité="$")
@@ -69,13 +141,13 @@ if st.button("Prédire"):
             gauge_fig = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=probability,
-                title={"text": "Score de Solvabilité"},
+                title={"text": "Score de Solvabilité", "font": {"size": font_size + 4}},
                 gauge={
-                    "axis": {"range": [0, 1], "tickcolor": "#FFFFFF"},
+                    "axis": {"range": [0, 1], "tickcolor": "#FFFFFF", "tickfont": {"size": font_size}},
                     "bar": {"color": "#1E90FF"},
                     "steps": [
-                        {"range": [0, seuil_optimal], "color": "#FF4500"},
-                        {"range": [seuil_optimal, 1], "color": "#32CD32"}
+                        {"range": [0, seuil_optimal], "color": "#F2E205"},
+                        {"range": [seuil_optimal, 1], "color": "#00A84F"}
                     ],
                     "threshold": {
                         "line": {"color": "#FFD700", "width": 4},
@@ -87,8 +159,6 @@ if st.button("Prédire"):
 
             st.plotly_chart(gauge_fig)
 
-            #Feature importance globale
-            
             # Feature importance locale
             client_pool = cb.Pool(client_data)
             shap_values = model.get_feature_importance(client_pool, type="ShapValues")            
@@ -107,15 +177,51 @@ if st.button("Prédire"):
                 y='Feature', 
                 orientation='h',
                 color_discrete_sequence=["#32CD32"],
-                title="Elements clés du score du client")            
+                title="Elements clés du score du client")     
+            fig.update_layout(
+                title_font_size=font_size + 4,
+                xaxis_title_font_size=font_size,
+                yaxis_title_font_size=font_size,
+                xaxis_tickfont_size=font_size,
+                yaxis_tickfont_size=font_size,
+            )
             st.plotly_chart(fig)
+
+            # Distribution des 3 features les plus influentes
+            top_3_shap = shap_df['Abs SHAP Value'].nlargest(3)
+            top_3_features = shap_df.loc[top_3_shap.index, 'Feature'].values
+            st.subheader("Mise en perspective des 3 éléments les plus influents du dossier du client par rapport à l'ensemble des clients")
+            
+            for feature in top_3_features:                
+                fig = px.box(
+                    data,
+                    x=feature,
+                    title=f'Distribution de {feature}',
+                    labels={feature: feature},
+                )
+                
+                client_value = client_data_brut[feature].values[0]
+                
+                fig.add_shape(
+                    type='line',
+                    x0=client_value, x1=client_value,
+                    y0=-0.5, y1=0.5,
+                    line=dict(color='red', width=3, dash='dash'),
+                )
+                
+                fig.update_traces(marker=dict(color='#1E90FF'), fillcolor="#32CD32")
+                fig.update_layout(
+                    xaxis_title=feature,
+                )
+                
+                st.plotly_chart(fig)
             
             #INFORMATIONS SUR LE DEMANDEUR
             st.subheader("Informations sur le demandeur")
             aff_info("CODE_GENDER", "Sexe :")
             aff_info("DAYS_BIRTH", "Age :")
             aff_info("NAME_EDUCATION_TYPE", "Dernier niveau de diplôme obtenu :")
-            aff_info("NAME_HOUSING_TYPE", "Statut de l'habitationé :")
+            aff_info("NAME_HOUSING_TYPE", "Statut de l'habitation :")
 
             #INFORMATIONS SUR LES REVENUS ET L EMPLOI
             st.subheader("Informations sur les revenus et l'emploi")
@@ -133,7 +239,6 @@ if st.button("Prédire"):
                 title='Positionnement du client dans la distribution des revenus totaux',
                 labels={'AMT_INCOME_TOTAL': 'Revenus Totaux ($)'},
             )
-
             revenus_totaux = client_data_brut["AMT_INCOME_TOTAL"].values[0]
             if revenus_totaux is not None:
                 fig.add_shape(
@@ -142,7 +247,6 @@ if st.button("Prédire"):
                     y0=-0.5, y1=0.5,
                     line=dict(color='red', width=3, dash='dash'),
                 )            
-            
             fig.update_traces(marker=dict(color='#1E90FF'), fillcolor="#32CD32")            
             fig.update_layout(
                 xaxis_title='Revenus Totaux ($)',
